@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Kata morse</title>
+    </head>
+	<body>
+	<input id="morse" />
+	<input type="button" value="Décoder" onclick="decoder();"/>
+	<div id="resultat">
+	</div>
+	<script type="text/javascript">
+		function contient(a, obj) {
+			for (var i = 0; i < a.length; i++) {
+				if (a[i] === obj) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		var ObjetATester = new Object();
+		ObjetATester.ValeurAttendue = new Object();
+		ObjetATester.ResultatDuTest = false;
+		ObjetATester.DEtreEgalA = function(valeurATester) {
+			this.ResultatDuTest &= this.ValeurAttendue == valeurATester;
+			return this;
+		}
+		ObjetATester.DeNePasEtreEgalA = function(valeurATester) {
+			this.ResultatDuTest &= this.ValeurAttendue != valeurATester;
+			return this;
+		}
+		ObjetATester.DEtre = function(valeurATester) {
+			this.ResultatDuTest &= this.ValeurAttendue === valeurATester;
+		}
+		ObjetATester.DeNePasEtre = function(valeurATester) {
+			this.ResultatDuTest &= this.ValeurAttendue !== valeurATester;
+		}
+		ObjetATester.DEtreVrai = function() {
+			this.ResultatDuTest &= this.ValeurAttendue === true;
+		}
+		ObjetATester.DEtreFaux = function() {
+			this.ResultatDuTest &= this.ValeurAttendue === false;
+		}
+		ObjetATester.DeContenir = function(valeurATester) {
+			this.ResultatDuTest &= contient(this.ValeurAttendue, valeurATester);
+		}
+		ObjetATester.DeNePasContenir = function(valeurATester) {
+			this.ResultatDuTest &= !contient(this.ValeurAttendue, valeurATester);
+		}
+		
+		function Ca(label, test) {
+			ObjetATester.ResultatDuTest = true;
+			test() ;
+			console.log("Ca " + label + " : " + (ObjetATester.ResultatDuTest ? "VERT" : "ROUGE"));
+		}
+		
+		function OnAttend(valeurAttendue) {
+			ObjetATester.ValeurAttendue = valeurAttendue
+			return ObjetATester;
+		}
+		
+		//Tests du testeur
+		/*Ca("vaut vrai", function() {
+			OnAttend(true).DEtreVrai();
+		});
+		Ca("vaut faux", function() {
+			OnAttend(false).DEtreFaux();
+		});
+		Ca("teste l'égalité", function() {
+			OnAttend('1').DEtreEgalA(1);
+			OnAttend('1').DEtreEgalA('1');
+			OnAttend('1').DeNePasEtreEgalA('2');
+		});
+		Ca("teste l'égalité avec type", function() {
+			OnAttend('1').DEtre('1');
+			OnAttend('1').DeNePasEtre(1);
+		});
+		Ca("contient un élément", function() {
+			OnAttend(['a', 'b']).DeContenir('a');
+			OnAttend(['a', 'b']).DeContenir('b');
+			OnAttend(['a', 'b']).DeNePasContenir('c');
+		});*/
+		
+		var DictionnaireMorse = {
+			'.-' : 'A',
+			'-...' : 'B',
+			'-.-.' : 'C',
+			'-..' : 'D',
+			'.' : 'E',
+			'..-.' : 'F',
+			'--.' : 'G',
+			'....' : 'H',
+			'..' : 'I',
+			'.---' : 'J',
+			'-.-' : 'K',
+			'.-..' : 'L',
+			'--' : 'M',
+			'-.' : 'N',
+			'---' : 'O',
+			'.--.' : 'P',
+			'--.-' : 'Q',
+			'.-.' : 'R',
+			'...' : 'S',
+			'-' : 'T',
+			'..-' : 'U',
+			'...-' : 'V',
+			'.--' : 'W',
+			'-..-' : 'X',
+			'-.--' : 'Y',
+			'--..' : 'Z'
+		}
+		
+		function traduireLeMorse(morse) {
+			var résultat = [];
+			for(var i = 1; i <= 4 && i <= morse.length; i++) {
+				résultat = isolerUneLettre(résultat, morse, i);
+			}
+			return résultat;
+		}
+		
+		function isolerUneLettre(résultat, morse, index) {
+			var lettre = DictionnaireMorse[morse.substring(0, index)];
+			if(lettre != null) {
+				var chaineRestanteATraduire = morse.substring(index);
+				résultat = traduireLeCodeRestant(résultat, lettre, chaineRestanteATraduire);
+			}
+			return résultat;
+		}
+		
+		function traduireLeCodeRestant(résultat, lettre, chaineRestanteATraduire) {
+			if(chaineRestanteATraduire.length > 0) {
+				résultat = concaténerAvecLesAutresLettres(résultat, lettre, chaineRestanteATraduire);
+			} else {
+				résultat.push(lettre);
+			}
+			return résultat;
+		}
+		
+		function concaténerAvecLesAutresLettres(résultat, lettre, chaineRestanteATraduire) {
+			var autresLettres = traduireLeMorse(chaineRestanteATraduire);
+			for(var j = 0; j < autresLettres.length; j++) {
+				résultat.push(lettre + autresLettres[j]);
+			}
+			return résultat;
+		}
+		
+		Ca('teste la traduction du A', function() {
+			OnAttend(traduireLeMorse('.-')).DeContenir('A');
+		});
+		Ca('teste la traduction du B', function() {
+			OnAttend(traduireLeMorse('-...')).DeContenir('B');
+		});
+		Ca('test la traduction de AB et PI', function() {
+			OnAttend(traduireLeMorse('.--...')).DeContenir('AB');
+			OnAttend(traduireLeMorse('.--...')).DeContenir('PI');
+		});
+		
+		function decoder() {
+			var entrée = document.getElementById('morse');
+			var sortie = document.getElementById('resultat');
+			var traductionsPossibles = traduireLeMorse(entrée.value);
+			var resultat = '';
+			for(var i = 0; i < traductionsPossibles.length; i++) {
+				resultat += traductionsPossibles[i] + '<br/>';
+			}
+			sortie.innerHTML = resultat;
+		}
+	</script>
+	</body>
+</html>
